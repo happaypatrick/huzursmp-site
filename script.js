@@ -405,7 +405,7 @@ async function handleLogin(event) {
     }
 
     const loginNickCheck = document.getElementById('loginNick').value.trim();
-    if (isReservedNick(loginNickCheck) && localStorage.getItem(OWNER_AUTO_KEY) !== '1') {
+    if (isReservedNick(loginNickCheck)) {
         showToast('Bu hesap kurucuya aittir. Giriş yapılamaz.');
         return;
     }
