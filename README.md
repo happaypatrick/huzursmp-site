@@ -78,6 +78,8 @@ Navbar'daki **Giriş Yap** düğmesi kayıt/giriş penceresi açar. İki mod var
 - Kullanıcılar `localStorage` içinde tutulur
 - Şifreler SHA-256 hash olarak saklanır
 - Giriş yapan kullanıcı adı navbar'da görünür
+- Kurucu adları (`happaypatrickD`, `happaypatrick`, `Mavzerina`) kayda ve girişe kapalıdır
+- Profil avatarı, biyografi ve kayıt tarihi tarayıcıda saklanır
 - **Gerçek hesap koruması yoktur**; sadece site görünümü içindir
 
 ### Güvenli mod (Worker yayına alınınca)
@@ -90,6 +92,7 @@ Repo kökündeki Cloudflare Worker (`index.js`) devreye girer:
 - Kod 10 dakika geçerli, 5 yanlış denemede iptal
 - Şifreler sunucuda PBKDF2 ile hash'lenir
 - Oturum `HttpOnly + Secure` çerezinde tutulur
+- Kurucu adları Worker tarafında da kayda ve girişe kapatılır
 
 Açmak için `script.js` içinde:
 

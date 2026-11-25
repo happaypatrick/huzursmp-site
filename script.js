@@ -7,6 +7,8 @@ const STATUS_CACHE_MS = 5 * 60 * 1000;
 
 const AUTH_USERS_KEY = 'huzursmp_site_users';
 const AUTH_SESSION_KEY = 'huzursmp_site_session';
+const PROFILE_KEY = 'huzursmp_site_profiles';
+const RESERVED_NICKS = ['happaypatrickd', 'happaypatrick', 'mavzerina'];
 const AUTH_LOCK_KEY = 'huzursmp_auth_lock';
 const AUTH_MAX_FAILS = 5;
 const AUTH_LOCK_MS = 30000;
@@ -100,6 +102,88 @@ function writeUsers(users) {
 
 function getSession() {
     return localStorage.getItem(AUTH_SESSION_KEY);
+}
+
+function isReservedNick(nick) {
+    return RESERVED_NICKS.includes(String(nick || '').trim().toLowerCase());
+}
+
+function readProfiles() {
+    try {
+        return JSON.parse(localStorage.getItem(PROFILE_KEY)) || {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function writeProfiles(profiles) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+}
+
+function ensureProfile(nick) {
+    const key = nick.toLowerCase();
+    const profiles = readProfiles();
+    if (!profiles[key]) {
+        profiles[key] = { bio: '', avatar: '⚔️', since: new Date().toISOString() };
+        writeProfiles(profiles);
+    }
+    return profiles[key];
+}
+
+function renderProfile() {
+    const nick = getSession();
+    if (!nick) return;
+
+    const profile = ensureProfile(nick);
+    const nameEl = document.getElementById('profileName');
+    const roleEl = document.getElementById('profileRole');
+    const avatarEl = document.getElementById('profileAvatar');
+    const sinceEl = document.getElementById('profileSince');
+    const serverEl = document.getElementById('profileServerStatus');
+    const bioEl = document.getElementById('profileBio');
+
+    if (nameEl) nameEl.textContent = nick;
+    if (roleEl) roleEl.textContent = isReservedNick(nick) ? 'Kurucu' : 'Oyuncu';
+    if (avatarEl) avatarEl.textContent = profile.avatar || '⚔️';
+    if (sinceEl) {
+        const date = new Date(profile.since);
+        sinceEl.textContent = Number.isNaN(date.getTime())
+            ? '-'
+            : date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    if (serverEl) {
+        const status = document.getElementById('statusLabel')?.textContent || 'Kontrol ediliyor...';
+        serverEl.textContent = status;
+        serverEl.className = status === 'Açık' ? 'online' : 'offline';
+    }
+    if (bioEl) bioEl.value = profile.bio || '';
+
+    document.querySelectorAll('#avatarPicker button').forEach((button) => {
+        button.classList.toggle('active', button.dataset.avatar === (profile.avatar || '⚔️'));
+    });
+}
+
+function saveProfile() {
+    const nick = getSession();
+    if (!nick) return;
+
+    const profiles = readProfiles();
+    const current = profiles[nick.toLowerCase()] || ensureProfile(nick);
+    const bioEl = document.getElementById('profileBio');
+    const activeAvatar = document.querySelector('#avatarPicker button.active');
+
+    current.bio = (bioEl?.value || '').trim().slice(0, 120);
+    current.avatar = activeAvatar?.dataset.avatar || current.avatar || '⚔️';
+    profiles[nick.toLowerCase()] = current;
+    writeProfiles(profiles);
+
+    renderProfile();
+    showToast('Profil kaydedildi.');
+}
+
+function selectAvatar(button) {
+    document.querySelectorAll('#avatarPicker button').forEach((item) => item.classList.remove('active'));
+    button.classList.add('active');
 }
 
 function getDeviceId() {
@@ -213,7 +297,7 @@ function updateAuthUI() {
     const user = getSession();
     if (user) {
         button.innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(user)}`;
-        button.title = 'Hesabını görüntüle / çıkış yap';
+        button.title = 'Profilini görüntüle / çıkış yap';
     } else {
         button.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Giriş Yap';
         button.title = 'Giriş yap veya kayıt ol';
@@ -262,6 +346,7 @@ function showProfile() {
     if (codeForm) codeForm.hidden = true;
     profile.hidden = false;
     if (name) name.textContent = getSession() || '-';
+    renderProfile();
 }
 
 function openAuth(mode = 'login') {
@@ -279,6 +364,12 @@ function closeAuth() {
 
 async function handleLogin(event) {
     event.preventDefault();
+
+    const loginNickCheck = document.getElementById('loginNick').value.trim();
+    if (isReservedNick(loginNickCheck)) {
+        showToast('Bu hesap kurucuya aittir. Giriş yapılamaz.');
+        return;
+    }
 
     if (AUTH_SECURE_MODE) {
         const nick = document.getElementById('loginNick').value.trim();
@@ -298,6 +389,7 @@ async function handleLogin(event) {
                 return;
             }
 
+            ensureProfile(data.nick);
             localStorage.setItem(AUTH_SESSION_KEY, data.nick);
             updateAuthUI();
             closeAuth();
@@ -342,6 +434,12 @@ async function handleLogin(event) {
 
 async function handleRegister(event) {
     event.preventDefault();
+
+    const registerNickCheck = document.getElementById('registerNick').value.trim();
+    if (isReservedNick(registerNickCheck)) {
+        showToast('Bu oyuncu adı kurucuya aittir, kayıt alınamaz.');
+        return;
+    }
 
     if (AUTH_SECURE_MODE) {
         const nick = document.getElementById('registerNick').value.trim();
@@ -403,8 +501,9 @@ async function handleRegister(event) {
         return;
     }
 
-    users[nick.toLowerCase()] = { nick, hash: await hashPassword(pass) };
+    users[nick.toLowerCase()] = { nick, hash: await hashPassword(pass), createdAt: new Date().toISOString() };
     writeUsers(users);
+    ensureProfile(nick);
     localStorage.setItem(AUTH_SESSION_KEY, nick);
     updateAuthUI();
     closeAuth();
@@ -454,6 +553,7 @@ async function handleCodeSubmit(event) {
             }
         });
 
+        ensureProfile(data.nick);
         localStorage.setItem(AUTH_SESSION_KEY, data.nick);
         pendingAuth = null;
         updateAuthUI();
@@ -470,6 +570,7 @@ async function restoreSecureSession() {
     try {
         const data = await authApi('/api/me', { method: 'GET' });
         if (data.nick) {
+            ensureProfile(data.nick);
             localStorage.setItem(AUTH_SESSION_KEY, data.nick);
         } else {
             localStorage.removeItem(AUTH_SESSION_KEY);

@@ -957,13 +957,97 @@ code {
     font-size: 26px;
 }
 
-.auth-profile p {
-    color: var(--muted);
-    margin-bottom: 14px;
+.auth-profile h3 {
+    color: var(--primary-deep);
+    font-size: 18px;
+    margin-bottom: 4px;
 }
 
-.auth-profile strong {
+.profile-role {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--primary-dark);
+    background: rgba(129, 199, 132, 0.18);
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin-bottom: 16px;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.profile-stats div {
+    background: var(--light);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.profile-stats span {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 3px;
+}
+
+.profile-stats strong {
+    font-size: 13px;
     color: var(--primary-deep);
+}
+
+.profile-stats strong.online { color: #1e9e4a; }
+.profile-stats strong.offline { color: #c62828; }
+
+.auth-profile textarea {
+    width: 100%;
+    border: 1px solid rgba(46, 125, 50, 0.20);
+    border-radius: 11px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text);
+    resize: vertical;
+    outline: none;
+    margin-bottom: 10px;
+}
+
+.auth-profile textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.18);
+}
+
+.avatar-picker {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.avatar-picker button {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(46, 125, 50, 0.16);
+    border-radius: 11px;
+    background: #fff;
+    font-size: 17px;
+    transition: 0.15s ease;
+}
+
+.avatar-picker button.active {
+    background: rgba(129, 199, 132, 0.22);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.auth-profile .btn {
+    width: 100%;
+    margin-top: 8px;
 }
 
 .auth-note {

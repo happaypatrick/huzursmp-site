@@ -9,6 +9,7 @@ const MAX_CODE_ATTEMPTS = 5;
 const MAX_LOGIN_ATTEMPTS = 10;
 const MAX_CHALLENGES_PER_NICK = 5;
 const WINDOW_15_MIN = 15 * 60;
+const RESERVED_NICKS = new Set(['happaypatrickd', 'happaypatrick', 'mavzerina']);
 
 export default {
   async fetch(request, env) {
@@ -267,6 +268,7 @@ async function register(request, env, cors) {
   const password = String(body.password || '');
 
   if (!validNick(nick)) throw new Error('Oyuncu adı 3-16 karakter, sadece harf/rakam/_ olabilir.');
+  if (RESERVED_NICKS.has(nick)) throw new Error('Bu oyuncu adi kurucuya aittir, kayit alinamaz.');
   if (!validEmail(email)) throw new Error('Gecerli bir e-posta adresi gir.');
   if (password.length < 8) throw new Error('Şifre en az 8 karakter olmali.');
 
@@ -346,6 +348,7 @@ async function login(request, env, cors) {
   const ip = clientIp(request);
 
   if (!nick || !password || !deviceId) throw new Error('Eksik giris bilgisi.');
+  if (RESERVED_NICKS.has(nick)) throw new Error('Bu hesap kurucuya aittir. Giris yapilamaz.');
 
   if (!(await hitRateLimit(env, `rl:login:${ip}`, MAX_LOGIN_ATTEMPTS, WINDOW_15_MIN))) {
     throw new Error('Cok fazla giris denemesi. Biraz bekle.');
