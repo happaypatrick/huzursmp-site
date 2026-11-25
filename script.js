@@ -4,6 +4,7 @@ const STATUS_REFRESH_MS = 60000;
 const STATUS_CACHE_KEY = 'huzursmp_status_cache';
 const STATUS_FAILS_KEY = 'huzursmp_status_fails';
 const STATUS_CACHE_MS = 5 * 60 * 1000;
+const THEME_KEY = 'huzursmp_theme';
 
 const AUTH_USERS_KEY = 'huzursmp_site_users';
 const AUTH_SESSION_KEY = 'huzursmp_site_session';
@@ -24,12 +25,20 @@ const OWNER_NICK = 'happaypatrickD';
 const OWNER_AUTO_KEY = 'huzursmp_owner_auto';
 const OWNER_TOKEN_HASH = 'd4b25803a0ac2afe5bdd7c814ce787f1d605def69a6b3a3f3555208a08a4150d';
 
+const STAFF_ROLES = ['Kurucu', 'Admin', 'Mod', 'Rehber'];
+const STAFF_ROLE_LABELS = {
+    Kurucu: 'Aktif kurucu',
+    Admin: 'Aktif admin',
+    Mod: 'Aktif mod',
+    Rehber: 'Aktif rehber'
+};
+
 const STAFF = [
     { name: 'happaypatrickD', role: 'Kurucu' },
     { name: 'Mavzerina', role: 'Kurucu' },
     { name: 'HET', role: 'Admin' },
     { name: 'KimsesizMakina', role: 'Admin' },
-    { name: 'KimsesizMaakina', role: 'Admin' },
+    { name: 'KimsesizMaakina', role: 'Admin', alias: true },
     { name: 'aliakn', role: 'Mod' }
 ];
 
@@ -93,6 +102,38 @@ function closeMenu() {
     navList.classList.remove('active');
     menuToggle.classList.remove('is-active');
     menuToggle.setAttribute('aria-expanded', 'false');
+}
+
+function applyTheme(theme, persist = false) {
+    const dark = theme === 'dark';
+    document.documentElement.classList.toggle('theme-dark', dark);
+
+    const button = document.getElementById('themeToggle');
+    if (button) {
+        const label = button.querySelector('.theme-label');
+        const icon = button.querySelector('i');
+        const name = dark ? 'Beyaz' : 'Karanlık';
+        const title = `${name} moda geç`;
+
+        button.setAttribute('aria-label', title);
+        button.setAttribute('title', title);
+        if (label) label.textContent = name;
+        if (icon) icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#0d1510' : '#81c784');
+
+    if (persist) {
+        try {
+            localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+        } catch (error) {}
+    }
+}
+
+function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('theme-dark');
+    applyTheme(isDark ? 'light' : 'dark', true);
 }
 
 function readUsers() {
@@ -647,23 +688,35 @@ function updateStaffStatus(onlineNames) {
     const active = STAFF.filter((member) => onlineNames.has(member.name.toLowerCase()));
 
     if (active.length === 0) {
-        text.textContent = 'Şu an aktif kurucu/admin/mod yok.';
+        text.textContent = 'Şu an aktif kurucu/admin/mod/rehber yok.';
         box.classList.remove('active');
         return;
     }
 
-    const roleOrder = ['Kurucu', 'Admin', 'Mod'];
-    const roleLabels = { Kurucu: 'Aktif kurucu', Admin: 'Aktif admin', Mod: 'Aktif mod' };
-    const parts = roleOrder
+    const parts = STAFF_ROLES
         .map((role) => ({
             role,
             names: active.filter((member) => member.role === role).map((member) => member.name)
         }))
         .filter((group) => group.names.length > 0)
-        .map((group) => `${roleLabels[group.role]}: ${group.names.join(', ')}`);
+        .map((group) => `${STAFF_ROLE_LABELS[group.role]}: ${group.names.join(', ')}`);
 
     text.textContent = parts.join(' | ');
     box.classList.add('active');
+}
+
+function renderStaffRoster() {
+    const roster = document.getElementById('staffRoster');
+    if (!roster) return;
+
+    roster.innerHTML = STAFF_ROLES.map((role) => {
+        const names = STAFF
+            .filter((member) => member.role === role && !member.alias)
+            .map((member) => member.name);
+        const value = names.length ? names.join(', ') : 'Şu an atama yok';
+        const empty = names.length === 0 ? ' is-empty' : '';
+        return `<div class="staff-roster-row${empty}"><span class="staff-roster-role">${role}</span><span class="staff-roster-names">${value}</span></div>`;
+    }).join('');
 }
 
 function setServerStatus(online, onlineCount = null, maxCount = null, unavailable = false, cached = false) {
@@ -788,6 +841,12 @@ function toggleMusic() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    let savedTheme = 'light';
+    try {
+        savedTheme = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+    } catch (error) {}
+    applyTheme(savedTheme);
+
     const year = document.getElementById('year');
     if (year) {
         year.textContent = String(new Date().getFullYear());

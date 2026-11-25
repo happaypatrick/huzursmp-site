@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="HuzurSmp - sakin, adil ve sorunsuz Minecraft survival sunucusu.">
     <meta name="theme-color" content="#81c784">
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('huzursmp_theme') === 'dark') {
+                    document.documentElement.classList.add('theme-dark');
+                    var meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) meta.setAttribute('content', '#0d1510');
+                }
+            } catch (error) {}
+        })();
+    </script>
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>HuzurSmp | Minecraft Survival</title>
     <link rel="icon" type="image/svg+xml" href="logo.svg">
@@ -42,6 +53,7 @@
             <li><a href="#guncellemeler" onclick="showSection('guncellemeler'); return false;">Güncellemeler</a></li>
             <li><a href="#destek" onclick="showSection('destek'); return false;">Destek</a></li>
             <li><a href="#hakkimizda" onclick="showSection('hakkimizda'); return false;">Hakkımızda</a></li>
+            <li><button class="nav-theme" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Karanlık moda geç" title="Karanlık moda geç"><i class="fa-solid fa-moon" aria-hidden="true"></i> <span class="theme-label">Karanlık</span></button></li>
             <li><a href="#" class="nav-login" id="authNavButton" onclick="openAuth('login'); return false;"><i class="fa-solid fa-right-to-bracket"></i> Giriş Yap</a></li>
             <li><a href="#anasayfa" class="nav-cta" onclick="copyServerIp(); return false;"><i class="fa-solid fa-copy"></i> IP'yi Kopyala</a></li>
         </ul>
