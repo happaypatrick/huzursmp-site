@@ -318,6 +318,9 @@
                 <label for="registerNick">Oyuncu adı</label>
                 <input id="registerNick" type="text" autocomplete="username" maxlength="16" placeholder="3-16 karakter" required>
 
+                <label for="registerEmail">E-posta</label>
+                <input id="registerEmail" type="email" autocomplete="email" maxlength="254" placeholder="Dogru adresi gir, kod oraya gidecek">
+
                 <label for="registerPass">Şifre</label>
                 <input id="registerPass" type="password" autocomplete="new-password" maxlength="64" placeholder="En az 4 karakter" required>
 
@@ -325,6 +328,16 @@
                 <input id="registerPass2" type="password" autocomplete="new-password" maxlength="64" placeholder="Şifreyi tekrar yaz" required>
 
                 <button class="btn btn-primary" type="submit">Kayıt Ol</button>
+            </form>
+
+            <form id="authCodeForm" class="auth-form" onsubmit="handleCodeSubmit(event)" hidden>
+                <p class="auth-code-info" id="authCodeInfo">Kod e-postana gönderildi.</p>
+
+                <label for="authCode">6 haneli kod</label>
+                <input id="authCode" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456" required>
+
+                <button class="btn btn-primary" type="submit">Doğrula</button>
+                <button class="btn btn-ghost btn-small" type="button" onclick="switchAuth('login')">Geri dön</button>
             </form>
 
             <div id="authProfile" class="auth-profile" hidden>

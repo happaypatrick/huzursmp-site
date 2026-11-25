@@ -1,0 +1,13 @@
+name = "huzursmp-auth"
+main = "src/index.js"
+compatibility_date = "2026-11-25"
+
+[vars]
+ALLOWED_ORIGIN = "https://happaypatrick.github.io"
+MAIL_PROVIDER = "resend"
+MAIL_FROM = "HuzurSmp <no-reply@SENIN-DOMAININ.com>"
+
+[[kv_namespaces]]
+binding = "AUTH_KV"
+id = "KV_NAMESPACE_ID_BURAYA"
+preview_id = "KV_PREVIEW_ID_BURAYA"

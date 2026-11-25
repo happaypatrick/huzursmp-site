@@ -892,6 +892,24 @@ code {
     display: none;
 }
 
+.auth-code-info {
+    background: rgba(129, 199, 132, 0.14);
+    border: 1px solid rgba(46, 125, 50, 0.14);
+    border-radius: 11px;
+    padding: 11px 13px;
+    color: var(--primary-deep);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+#authCode {
+    letter-spacing: 8px;
+    font-size: 18px;
+    text-align: center;
+    font-weight: 600;
+}
+
 .auth-form label {
     font-size: 13px;
     font-weight: 600;

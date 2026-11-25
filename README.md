@@ -68,14 +68,35 @@ Sağ alttaki müzik düğmesi `assets/huzursmp-theme.mp3` dosyasını arar. Dosy
 
 ## Site girişi
 
-Navbar'daki **Giriş Yap** düğmesi kayıt/giriş penceresi açar. Bu sistem tamamen tarayıcıda çalışır:
+Navbar'daki **Giriş Yap** düğmesi kayıt/giriş penceresi açar. İki mod vardır:
+
+### Yerel mod (şu anki yayın)
 
 - Kullanıcılar `localStorage` içinde tutulur
 - Şifreler SHA-256 hash olarak saklanır
 - Giriş yapan kullanıcı adı navbar'da görünür
-- Çıkış yap butonu profil penceresindedir
+- **Gerçek hesap koruması yoktur**; sadece site görünümü içindir
 
-Bu giriş **Minecraft hesabını doğrulamaz**; sadece site görünümü içindir. Gerçek hesap sistemi istersen bir backend gerekir.
+### Güvenli mod (Worker yayına alınınca)
+
+`worker/` klasöründeki Cloudflare Worker devreye girer:
+
+- Kayıtta e-posta doğrulama kodu gider
+- Yeni cihazdan girişte kullanıcının e-postasına 6 haneli kod gider
+- IP değişirse yine kod istenir
+- Kod 10 dakika geçerli, 5 yanlış denemede iptal
+- Şifreler sunucuda PBKDF2 ile hash'lenir
+- Oturum `HttpOnly + Secure` çerezinde tutulur
+
+Açmak için `script.js` içinde:
+
+```js
+const AUTH_API_BASE = '';
+```
+
+satırına Worker adresini yaz. Kurulum için `worker/README-WORKER.md` dosyasına bak.
+
+Bu giriş **Minecraft hesabını doğrulamaz**; site hesabı içindir.
 
 ## Site koruması
 

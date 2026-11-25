@@ -11,6 +11,12 @@ const AUTH_LOCK_KEY = 'huzursmp_auth_lock';
 const AUTH_MAX_FAILS = 5;
 const AUTH_LOCK_MS = 30000;
 
+// Worker yayına alındığında buraya Worker adresini yaz.
+// Boş kalırsa eski yerel giriş modu çalışmaya devam eder.
+const AUTH_API_BASE = '';
+const AUTH_SECURE_MODE = AUTH_API_BASE.length > 0;
+const AUTH_DEVICE_KEY = 'huzursmp_device_id';
+
 const STAFF = [
     { name: 'happaypatrickD', role: 'Kurucu' },
     { name: 'Mavzerina', role: 'Kurucu' },
@@ -22,6 +28,7 @@ let toastTimer = null;
 let statusFetching = false;
 let statusTimer = null;
 let statusFailCount = 0;
+let pendingAuth = null;
 
 function showToast(message) {
     const toast = document.getElementById('toast');
@@ -93,6 +100,56 @@ function writeUsers(users) {
 
 function getSession() {
     return localStorage.getItem(AUTH_SESSION_KEY);
+}
+
+function getDeviceId() {
+    let deviceId = localStorage.getItem(AUTH_DEVICE_KEY);
+    if (!deviceId) {
+        deviceId = window.crypto?.randomUUID
+            ? window.crypto.randomUUID()
+            : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem(AUTH_DEVICE_KEY, deviceId);
+    }
+    return deviceId;
+}
+
+async function authApi(path, options = {}) {
+    if (!AUTH_SECURE_MODE) throw new Error('Guvenli giris modu kapali.');
+
+    const response = await fetch(`${AUTH_API_BASE.replace(/\/$/, '')}${path}`, {
+        method: options.method || 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        body: options.body ? JSON.stringify(options.body) : undefined
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+    return data;
+}
+
+function showCodeForm(message, meta = {}) {
+    const form = document.getElementById('authCodeForm');
+    const info = document.getElementById('authCodeInfo');
+    const tabs = document.getElementById('authTabs');
+    const loginForm = document.getElementById('authLoginForm');
+    const registerForm = document.getElementById('authRegisterForm');
+    const profile = document.getElementById('authProfile');
+    const codeInput = document.getElementById('authCode');
+    if (!form || !info || !tabs || !loginForm || !registerForm || !profile) return;
+
+    pendingAuth = meta;
+    document.getElementById('authOverlay').hidden = false;
+    tabs.hidden = true;
+    loginForm.hidden = true;
+    registerForm.hidden = true;
+    profile.hidden = true;
+    form.hidden = false;
+    info.textContent = message;
+    if (codeInput) {
+        codeInput.value = '';
+        codeInput.focus();
+    }
 }
 
 function getAuthLock() {
@@ -168,14 +225,17 @@ function switchAuth(mode) {
     const tabs = document.getElementById('authTabs');
     const loginForm = document.getElementById('authLoginForm');
     const registerForm = document.getElementById('authRegisterForm');
+    const codeForm = document.getElementById('authCodeForm');
     const profile = document.getElementById('authProfile');
     const loginTab = document.getElementById('authTabLogin');
     const registerTab = document.getElementById('authTabRegister');
     if (!overlay || !tabs || !loginForm || !registerForm || !profile) return;
 
+    pendingAuth = null;
     overlay.hidden = false;
     tabs.hidden = false;
     profile.hidden = true;
+    if (codeForm) codeForm.hidden = true;
 
     const isLogin = mode !== 'register';
     loginForm.hidden = !isLogin;
@@ -189,14 +249,17 @@ function showProfile() {
     const tabs = document.getElementById('authTabs');
     const loginForm = document.getElementById('authLoginForm');
     const registerForm = document.getElementById('authRegisterForm');
+    const codeForm = document.getElementById('authCodeForm');
     const profile = document.getElementById('authProfile');
     const name = document.getElementById('profileName');
     if (!overlay || !tabs || !loginForm || !registerForm || !profile) return;
 
+    pendingAuth = null;
     overlay.hidden = false;
     tabs.hidden = true;
     loginForm.hidden = true;
     registerForm.hidden = true;
+    if (codeForm) codeForm.hidden = true;
     profile.hidden = false;
     if (name) name.textContent = getSession() || '-';
 }
@@ -216,6 +279,34 @@ function closeAuth() {
 
 async function handleLogin(event) {
     event.preventDefault();
+
+    if (AUTH_SECURE_MODE) {
+        const nick = document.getElementById('loginNick').value.trim();
+        const pass = document.getElementById('loginPass').value;
+
+        try {
+            const data = await authApi('/api/login', {
+                body: { nick, password: pass, deviceId: getDeviceId() }
+            });
+
+            if (data.needsCode) {
+                showCodeForm(`Yeni cihaz veya IP değişikliği algılandı. Kod ${data.emailHint} adresine gönderildi.`, {
+                    type: 'login',
+                    challenge: data.challenge,
+                    nick: data.nick
+                });
+                return;
+            }
+
+            localStorage.setItem(AUTH_SESSION_KEY, data.nick);
+            updateAuthUI();
+            closeAuth();
+            showToast(`Hoş geldin, ${data.nick}!`);
+        } catch (error) {
+            showToast(error.message || 'Giriş başarısız.');
+        }
+        return;
+    }
 
     const lockLeft = getAuthLockLeft();
     if (lockLeft > 0) {
@@ -252,6 +343,44 @@ async function handleLogin(event) {
 async function handleRegister(event) {
     event.preventDefault();
 
+    if (AUTH_SECURE_MODE) {
+        const nick = document.getElementById('registerNick').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const pass = document.getElementById('registerPass').value;
+        const pass2 = document.getElementById('registerPass2').value;
+
+        if (!/^[A-Za-z0-9_]{3,16}$/.test(nick)) {
+            showToast('Oyuncu adı 3-16 karakter, sadece harf/rakam/_ olabilir.');
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showToast('Geçerli bir e-posta adresi gir.');
+            return;
+        }
+        if (pass.length < 8) {
+            showToast('Şifre en az 8 karakter olmalı.');
+            return;
+        }
+        if (pass !== pass2) {
+            showToast('Şifreler eşleşmiyor.');
+            return;
+        }
+
+        try {
+            const data = await authApi('/api/register', {
+                body: { nick, email, password: pass }
+            });
+            showCodeForm(`Doğrulama kodu ${data.emailHint} adresine gönderildi.`, {
+                type: 'email',
+                nick: data.nick,
+                emailHint: data.emailHint
+            });
+        } catch (error) {
+            showToast(error.message || 'Kayıt başarısız.');
+        }
+        return;
+    }
+
     const nick = document.getElementById('registerNick').value.trim();
     const pass = document.getElementById('registerPass').value;
     const pass2 = document.getElementById('registerPass2').value;
@@ -282,11 +411,73 @@ async function handleRegister(event) {
     showToast(`Kayıt tamam, hoş geldin ${nick}!`);
 }
 
-function logout() {
+async function logout() {
+    if (AUTH_SECURE_MODE) {
+        try {
+            await authApi('/api/logout');
+        } catch (error) {
+            // Yerli oturum yine de temizlenir.
+        }
+    }
+
     localStorage.removeItem(AUTH_SESSION_KEY);
+    pendingAuth = null;
     updateAuthUI();
     closeAuth();
     showToast('Çıkış yapıldı.');
+}
+
+async function handleCodeSubmit(event) {
+    event.preventDefault();
+    if (!pendingAuth) return;
+
+    const code = document.getElementById('authCode').value.trim();
+    if (!/^\d{6}$/.test(code)) {
+        showToast('6 haneli kodu gir.');
+        return;
+    }
+
+    try {
+        if (pendingAuth.type === 'email') {
+            await authApi('/api/verify-email', { body: { nick: pendingAuth.nick, code } });
+            pendingAuth = null;
+            switchAuth('login');
+            showToast('E-postan doğrulandı. Şimdi giriş yapabilirsin.');
+            return;
+        }
+
+        const data = await authApi('/api/verify', {
+            body: {
+                challenge: pendingAuth.challenge,
+                code,
+                deviceId: getDeviceId()
+            }
+        });
+
+        localStorage.setItem(AUTH_SESSION_KEY, data.nick);
+        pendingAuth = null;
+        updateAuthUI();
+        closeAuth();
+        showToast(`Hoş geldin, ${data.nick}! Bu cihaz artık güvenilir.`);
+    } catch (error) {
+        showToast(error.message || 'Kod doğrulanamadı.');
+    }
+}
+
+async function restoreSecureSession() {
+    if (!AUTH_SECURE_MODE) return;
+
+    try {
+        const data = await authApi('/api/me', { method: 'GET' });
+        if (data.nick) {
+            localStorage.setItem(AUTH_SESSION_KEY, data.nick);
+        } else {
+            localStorage.removeItem(AUTH_SESSION_KEY);
+        }
+        updateAuthUI();
+    } catch (error) {
+        // Çerez yoksa kullanıcı giriş ekranında kalır.
+    }
 }
 
 async function copyServerIp() {
@@ -475,7 +666,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'Escape') closeAuth();
     });
 
+    const authNote = document.querySelector('.auth-note');
+    if (authNote && AUTH_SECURE_MODE) {
+        authNote.textContent = 'Yeni cihaz veya IP değişikliğinde doğrulama kodu e-posta adresine gönderilir.';
+        const registerPass = document.getElementById('registerPass');
+        if (registerPass) registerPass.placeholder = 'En az 8 karakter';
+    }
+
     updateAuthUI();
+    restoreSecureSession();
     updateServerStatus();
 
     document.addEventListener('visibilitychange', () => {
