@@ -1,8 +1,15 @@
 const SERVER_IP = 'fried-latch.tun.ply.gg';
 const STATUS_API = `https://api.mcsrvstat.us/3/${SERVER_IP}`;
 const STATUS_REFRESH_MS = 60000;
+const STATUS_CACHE_KEY = 'huzursmp_status_cache';
+const STATUS_FAILS_KEY = 'huzursmp_status_fails';
+const STATUS_CACHE_MS = 5 * 60 * 1000;
+
 const AUTH_USERS_KEY = 'huzursmp_site_users';
 const AUTH_SESSION_KEY = 'huzursmp_site_session';
+const AUTH_LOCK_KEY = 'huzursmp_auth_lock';
+const AUTH_MAX_FAILS = 5;
+const AUTH_LOCK_MS = 30000;
 
 const STAFF = [
     { name: 'happaypatrickD', role: 'Kurucu' },
@@ -12,6 +19,9 @@ const STAFF = [
 ];
 
 let toastTimer = null;
+let statusFetching = false;
+let statusTimer = null;
+let statusFailCount = 0;
 
 function showToast(message) {
     const toast = document.getElementById('toast');
@@ -83,6 +93,34 @@ function writeUsers(users) {
 
 function getSession() {
     return localStorage.getItem(AUTH_SESSION_KEY);
+}
+
+function getAuthLock() {
+    try {
+        return JSON.parse(sessionStorage.getItem(AUTH_LOCK_KEY)) || { fails: 0, until: 0 };
+    } catch (error) {
+        return { fails: 0, until: 0 };
+    }
+}
+
+function setAuthLock(lock) {
+    sessionStorage.setItem(AUTH_LOCK_KEY, JSON.stringify(lock));
+}
+
+function getAuthLockLeft() {
+    const lock = getAuthLock();
+    if (!lock.until) return 0;
+
+    const left = Math.ceil((lock.until - Date.now()) / 1000);
+    if (left <= 0) {
+        setAuthLock({ fails: 0, until: 0 });
+        return 0;
+    }
+    return left;
+}
+
+function resetAuthLock() {
+    setAuthLock({ fails: 0, until: 0 });
 }
 
 function escapeHtml(text) {
@@ -179,16 +217,32 @@ function closeAuth() {
 async function handleLogin(event) {
     event.preventDefault();
 
+    const lockLeft = getAuthLockLeft();
+    if (lockLeft > 0) {
+        showToast(`Çok fazla deneme oldu, ${lockLeft} saniye bekle.`);
+        return;
+    }
+
     const nick = document.getElementById('loginNick').value.trim();
     const pass = document.getElementById('loginPass').value;
     const users = readUsers();
     const entry = users[nick.toLowerCase()];
 
     if (!entry || entry.hash !== await hashPassword(pass)) {
-        showToast('Oyuncu adı veya şifre yanlış.');
+        const lock = getAuthLock();
+        lock.fails += 1;
+        if (lock.fails >= AUTH_MAX_FAILS) {
+            lock.until = Date.now() + AUTH_LOCK_MS;
+            lock.fails = 0;
+            showToast('Çok fazla yanlış deneme. 30 saniye beklesen iyi olur.');
+        } else {
+            showToast('Oyuncu adı veya şifre yanlış.');
+        }
+        setAuthLock(lock);
         return;
     }
 
+    resetAuthLock();
     localStorage.setItem(AUTH_SESSION_KEY, entry.nick);
     updateAuthUI();
     closeAuth();
@@ -276,7 +330,7 @@ function updateStaffStatus(onlineNames) {
     box.classList.add('active');
 }
 
-function setServerStatus(online, onlineCount = null, maxCount = null, unavailable = false) {
+function setServerStatus(online, onlineCount = null, maxCount = null, unavailable = false, cached = false) {
     const bar = document.getElementById('statusBar');
     const dot = document.getElementById('statusDot');
     const label = document.getElementById('statusLabel');
@@ -299,32 +353,81 @@ function setServerStatus(online, onlineCount = null, maxCount = null, unavailabl
     const time = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     bar.title = unavailable
         ? `Durum servisine ulaşılamadı (${time}). Son bilgi kapalı kabul edildi.`
-        : `Son kontrol: ${time}`;
+        : cached
+            ? `Son kontrol: ${time} (önbellekten)`
+            : `Son kontrol: ${time}`;
 }
 
-async function updateServerStatus() {
+function readStatusCache() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(STATUS_CACHE_KEY));
+        if (!raw || !Number.isFinite(raw.fetchedAt)) return null;
+        return raw;
+    } catch (error) {
+        return null;
+    }
+}
+
+function applyStatusCache(cache, cached = true) {
+    setServerStatus(cache.online === true, cache.onlineCount, cache.maxCount, false, cached);
+    updateStaffStatus(new Set((cache.names || []).map((name) => String(name).toLowerCase())));
+}
+
+function scheduleStatusUpdate() {
+    if (statusTimer) clearTimeout(statusTimer);
+    const delay = statusFailCount >= 2 ? 5 * 60 * 1000 : STATUS_REFRESH_MS;
+    statusTimer = setTimeout(() => updateServerStatus(true), delay);
+}
+
+async function updateServerStatus(force = false) {
+    if (statusFetching) return;
+    statusFetching = true;
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
+        const cache = readStatusCache();
+        if (!force && cache && Date.now() - cache.fetchedAt < STATUS_CACHE_MS) {
+            applyStatusCache(cache);
+            return;
+        }
+
         const response = await fetch(STATUS_API, { cache: 'no-store', signal: controller.signal });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
-        setServerStatus(
-            data.online === true,
-            data.players?.online,
-            data.players?.max
-        );
-
         const playerList = Array.isArray(data.players?.list) ? data.players.list : [];
-        const onlineNames = new Set(playerList.map((player) => String(player.name || '').toLowerCase()));
-        updateStaffStatus(onlineNames);
+        const names = playerList.map((player) => String(player.name || '').toLowerCase());
+
+        setServerStatus(data.online === true, data.players?.online, data.players?.max);
+        updateStaffStatus(new Set(names));
+
+        localStorage.setItem(STATUS_CACHE_KEY, JSON.stringify({
+            online: data.online === true,
+            onlineCount: data.players?.online ?? null,
+            maxCount: data.players?.max ?? null,
+            names,
+            fetchedAt: Date.now()
+        }));
+
+        statusFailCount = 0;
+        localStorage.removeItem(STATUS_FAILS_KEY);
     } catch (error) {
-        setServerStatus(false, null, null, true);
-        updateStaffStatus(new Set());
+        statusFailCount = Number(localStorage.getItem(STATUS_FAILS_KEY) || 0) + 1;
+        localStorage.setItem(STATUS_FAILS_KEY, String(statusFailCount));
+
+        const stale = readStatusCache();
+        if (stale) {
+            applyStatusCache(stale);
+        } else {
+            setServerStatus(false, null, null, true);
+            updateStaffStatus(new Set());
+        }
     } finally {
         clearTimeout(timeout);
+        statusFetching = false;
+        scheduleStatusUpdate();
     }
 }
 
@@ -374,7 +477,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateAuthUI();
     updateServerStatus();
-    setInterval(updateServerStatus, STATUS_REFRESH_MS);
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) updateServerStatus();

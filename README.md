@@ -77,6 +77,19 @@ Navbar'daki **Giriş Yap** düğmesi kayıt/giriş penceresi açar. Bu sistem ta
 
 Bu giriş **Minecraft hesabını doğrulamaz**; sadece site görünümü içindir. Gerçek hesap sistemi istersen bir backend gerekir.
 
+## Site koruması
+
+GitHub Pages statik olduğu için GitHub katmanı gelen trafiği karşılar; sunucu tarafında bir açık yoktur. Yine de sitenin dış API bağımlılığı şu şekilde korunur:
+
+- Durum verisi tarayıcıda 5 dakika önbelleğe alınır
+- Aynı anda birden fazla durum isteği açılmaz (`statusFetching`)
+- API çökerse son bilinen durum önbellekten gösterilir
+- Üst üste hata olursa sorgu aralığı 1 dakikadan 5 dakikaya çekilir
+- Her istek 8 saniyede timeout'a düşer
+- Giriş formunda 5 yanlış denemeden sonra 30 saniyelik kilit vardır
+
+Bu önlemler sitenin yavaşlamasını ve API rate limit'e takılmasını engeller.
+
 ## Canlı sunucu durumu
 
 Ana sayfadaki durum çubuğu `https://api.mcsrvstat.us/3/fried-latch.tun.ply.gg` adresini 60 saniyede bir sorgular:
