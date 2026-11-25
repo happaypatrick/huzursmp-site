@@ -9,7 +9,7 @@ GitHub Pages statik olduğu için e-posta göndermek, IP görmek ve oturum çere
 - Şifreler PBKDF2 + random salt ile hash'lenir
 - Oturum `HttpOnly + Secure + SameSite=None` çereziyle tutulur
 - IP ve giris denemeleri KV'de rate-limit'e tabi
-- `happaypatrickD` ve `happaypatrick` adları kayda ve girişe kapalıdır
+- `Jrpython` adı kayda ve girişe kapalıdır
 
 ## 1. Cloudflare hazırlığı
 

@@ -9,8 +9,8 @@ const THEME_KEY = 'huzursmp_theme';
 const AUTH_USERS_KEY = 'huzursmp_site_users';
 const AUTH_SESSION_KEY = 'huzursmp_site_session';
 const PROFILE_KEY = 'huzursmp_site_profiles';
-const RESERVED_NICKS = ['happaypatrickd', 'happaypatrick'];
-const REMOVED_NICKS = ['mavzerina'];
+const RESERVED_NICKS = ['jrpython'];
+const REMOVED_NICKS = ['mavzerina', 'happaypatrickd', 'happaypatrick'];
 const AUTH_LOCK_KEY = 'huzursmp_auth_lock';
 const AUTH_MAX_FAILS = 5;
 const AUTH_LOCK_MS = 30000;
@@ -22,7 +22,7 @@ const AUTH_SECURE_MODE = AUTH_API_BASE.length > 0;
 const AUTH_DEVICE_KEY = 'huzursmp_device_id';
 
 // Kurucu otomatik girisi: tek kullanimlik gizli link ile bu tarayicida kalici acilir.
-const OWNER_NICK = 'happaypatrickD';
+const OWNER_NICK = 'Jrpython';
 const OWNER_AUTO_KEY = 'huzursmp_owner_auto';
 const OWNER_TOKEN_HASH = 'd4b25803a0ac2afe5bdd7c814ce787f1d605def69a6b3a3f3555208a08a4150d';
 
@@ -35,7 +35,7 @@ const STAFF_ROLE_LABELS = {
 };
 
 const STAFF = [
-    { name: 'happaypatrickD', role: 'Kurucu' },
+    { name: 'Jrpython', role: 'Kurucu' },
     { name: 'HET', role: 'Admin' },
     { name: 'KimsesizMakina', role: 'Admin' },
     { name: 'KimsesizMaakina', role: 'Admin', alias: true },

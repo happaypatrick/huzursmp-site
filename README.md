@@ -78,7 +78,7 @@ Navbar'daki **Giriş Yap** düğmesi kayıt/giriş penceresi açar. İki mod var
 - Kullanıcılar `localStorage` içinde tutulur
 - Şifreler SHA-256 hash olarak saklanır
 - Giriş yapan kullanıcı adı navbar'da görünür
-- Kurucu adları (`happaypatrickD`, `happaypatrick`) kayda ve girişe kapalıdır
+- Kurucu adı (`Jrpython`) kayda ve girişe kapalıdır
 - Profil avatarı, biyografi ve kayıt tarihi tarayıcıda saklanır
 - **Gerçek hesap koruması yoktur**; sadece site görünümü içindir
 
@@ -130,7 +130,7 @@ Aktif yönetim listesi `script.js` içindeki `STAFF` dizisinden gelir:
 
 ```js
 const STAFF = [
-    { name: 'happaypatrickD', role: 'Kurucu' },
+    { name: 'Jrpython', role: 'Kurucu' },
     { name: 'HET', role: 'Admin' },
     { name: 'KimsesizMaakina', role: 'Admin' }
 ];
