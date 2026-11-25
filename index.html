@@ -151,7 +151,10 @@
 
             <div class="staff-status" id="staffStatus" title="Aktif yönetim sunucu listesinden kontrol edilir.">
                 <i class="fa-solid fa-user-check" aria-hidden="true"></i>
-                <span id="staffStatusText">Aktif kurucu/admin aranıyor...</span>
+                <span id="staffStatusText">Aktif kurucu/admin/mod aranıyor...</span>
+                <button class="staff-refresh" type="button" title="Aktif yönetimi yenile" aria-label="Aktif yönetimi yenile" onclick="updateServerStatus(true); return false;">
+                    <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                </button>
             </div>
 
             <div class="support-grid">

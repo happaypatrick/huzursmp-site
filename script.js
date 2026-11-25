@@ -28,7 +28,9 @@ const STAFF = [
     { name: 'happaypatrickD', role: 'Kurucu' },
     { name: 'Mavzerina', role: 'Kurucu' },
     { name: 'HET', role: 'Admin' },
-    { name: 'KimsesizMaakina', role: 'Admin' }
+    { name: 'KimsesizMakina', role: 'Admin' },
+    { name: 'KimsesizMaakina', role: 'Admin' },
+    { name: 'aliakn', role: 'Mod' }
 ];
 
 let toastTimer = null;
@@ -645,17 +647,20 @@ function updateStaffStatus(onlineNames) {
     const active = STAFF.filter((member) => onlineNames.has(member.name.toLowerCase()));
 
     if (active.length === 0) {
-        text.textContent = 'Şu an aktif kurucu/admin yok.';
+        text.textContent = 'Şu an aktif kurucu/admin/mod yok.';
         box.classList.remove('active');
         return;
     }
 
-    const founders = active.filter((member) => member.role === 'Kurucu').map((member) => member.name);
-    const admins = active.filter((member) => member.role === 'Admin').map((member) => member.name);
-    const parts = [];
-
-    if (founders.length) parts.push(`Aktif kurucu: ${founders.join(', ')}`);
-    if (admins.length) parts.push(`Aktif admin: ${admins.join(', ')}`);
+    const roleOrder = ['Kurucu', 'Admin', 'Mod'];
+    const roleLabels = { Kurucu: 'Aktif kurucu', Admin: 'Aktif admin', Mod: 'Aktif mod' };
+    const parts = roleOrder
+        .map((role) => ({
+            role,
+            names: active.filter((member) => member.role === role).map((member) => member.name)
+        }))
+        .filter((group) => group.names.length > 0)
+        .map((group) => `${roleLabels[group.role]}: ${group.names.join(', ')}`);
 
     text.textContent = parts.join(' | ');
     box.classList.add('active');
