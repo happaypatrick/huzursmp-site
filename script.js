@@ -19,6 +19,11 @@ const AUTH_API_BASE = '';
 const AUTH_SECURE_MODE = AUTH_API_BASE.length > 0;
 const AUTH_DEVICE_KEY = 'huzursmp_device_id';
 
+// Kurucu otomatik girisi: tek kullanimlik gizli link ile bu tarayicida kalici acilir.
+const OWNER_NICK = 'happaypatrickD';
+const OWNER_AUTO_KEY = 'huzursmp_owner_auto';
+const OWNER_TOKEN_HASH = 'd4b25803a0ac2afe5bdd7c814ce787f1d605def69a6b3a3f3555208a08a4150d';
+
 const STAFF = [
     { name: 'happaypatrickD', role: 'Kurucu' },
     { name: 'Mavzerina', role: 'Kurucu' },
@@ -102,6 +107,34 @@ function writeUsers(users) {
 
 function getSession() {
     return localStorage.getItem(AUTH_SESSION_KEY);
+}
+
+async function sha256(text) {
+    const bytes = new TextEncoder().encode(text);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+async function autoLoginOwner() {
+    if (AUTH_SECURE_MODE) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('owner');
+    if (token && (await sha256(token)) === OWNER_TOKEN_HASH) {
+        localStorage.setItem(OWNER_AUTO_KEY, '1');
+        params.delete('owner');
+        const clean = window.location.pathname
+            + (params.toString() ? `?${params.toString()}` : '')
+            + window.location.hash;
+        window.history.replaceState({}, document.title, clean);
+    }
+
+    if (localStorage.getItem(OWNER_AUTO_KEY) === '1') {
+        localStorage.setItem(AUTH_SESSION_KEY, OWNER_NICK);
+        ensureProfile(OWNER_NICK);
+    }
 }
 
 function isReservedNick(nick) {
@@ -365,8 +398,14 @@ function closeAuth() {
 async function handleLogin(event) {
     event.preventDefault();
 
+    // Giris yapilmissa kurucu uyarisini gosterme, profili ac.
+    if (getSession()) {
+        showProfile();
+        return;
+    }
+
     const loginNickCheck = document.getElementById('loginNick').value.trim();
-    if (isReservedNick(loginNickCheck)) {
+    if (isReservedNick(loginNickCheck) && localStorage.getItem(OWNER_AUTO_KEY) !== '1') {
         showToast('Bu hesap kurucuya aittir. Giriş yapılamaz.');
         return;
     }
@@ -743,7 +782,7 @@ function toggleMusic() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const year = document.getElementById('year');
     if (year) {
         year.textContent = String(new Date().getFullYear());
@@ -774,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (registerPass) registerPass.placeholder = 'En az 8 karakter';
     }
 
+    await autoLoginOwner();
     updateAuthUI();
     restoreSecureSession();
     updateServerStatus();
