@@ -1,6 +1,6 @@
 # HuzurSmp güvenli giriş Worker'ı
 
-GitHub Pages statik olduğu için e-posta göndermek, IP görmek ve oturum çerezi tutmak mümkün değil. Bu klasördeki Worker gerçek korumayı sağlar:
+GitHub Pages statik olduğu için e-posta göndermek, IP görmek ve oturum çerezi tutmak mümkün değil. Repo kökündeki `index.js` Worker'ı gerçek korumayı sağlar:
 
 - Kayıt e-postasına 6 haneli doğrulama kodu gider
 - Yeni cihazda girişte koda e-posta gider
@@ -69,7 +69,7 @@ Sağlık kontrolü:
 
 ## 4. Siteyi bağla
 
-`../script.js` dosyasının üst kısmında:
+`script.js` dosyasının üst kısmında:
 
 ```js
 const AUTH_API_BASE = '';

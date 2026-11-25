@@ -8,6 +8,9 @@ KralMC tarzı, açık yeşil ve cam efektli statik site. Mağaza ve launcher bö
 - `style.css` - tema ve responsive düzen
 - `script.js` - bölüm geçişi, IP kopyalama, giriş/kayıt, canlı durum, aktif yönetim, müzik ve menü
 - `logo.svg` - favicon / navbar logosu
+- `index.js` - güvenli giriş Worker kaynak kodu
+- `wrangler.toml` - Worker ayarı
+- `README-WORKER.md` - Worker kurulum rehberi
 
 ## Arkadaşlarına / herkese nasıl paylaşırsın
 
@@ -79,7 +82,7 @@ Navbar'daki **Giriş Yap** düğmesi kayıt/giriş penceresi açar. İki mod var
 
 ### Güvenli mod (Worker yayına alınınca)
 
-`worker/` klasöründeki Cloudflare Worker devreye girer:
+Repo kökündeki Cloudflare Worker (`index.js`) devreye girer:
 
 - Kayıtta e-posta doğrulama kodu gider
 - Yeni cihazdan girişte kullanıcının e-postasına 6 haneli kod gider
@@ -94,7 +97,7 @@ Açmak için `script.js` içinde:
 const AUTH_API_BASE = '';
 ```
 
-satırına Worker adresini yaz. Kurulum için `worker/README-WORKER.md` dosyasına bak.
+satırına Worker adresini yaz. Kurulum için `README-WORKER.md` dosyasına bak.
 
 Bu giriş **Minecraft hesabını doğrulamaz**; site hesabı içindir.
 
