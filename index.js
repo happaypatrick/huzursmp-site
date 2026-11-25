@@ -9,7 +9,7 @@ const MAX_CODE_ATTEMPTS = 5;
 const MAX_LOGIN_ATTEMPTS = 10;
 const MAX_CHALLENGES_PER_NICK = 5;
 const WINDOW_15_MIN = 15 * 60;
-const RESERVED_NICKS = new Set(['happaypatrickd', 'happaypatrick', 'mavzerina']);
+const RESERVED_NICKS = new Set(['happaypatrickd', 'happaypatrick']);
 
 export default {
   async fetch(request, env) {

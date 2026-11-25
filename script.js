@@ -9,7 +9,8 @@ const THEME_KEY = 'huzursmp_theme';
 const AUTH_USERS_KEY = 'huzursmp_site_users';
 const AUTH_SESSION_KEY = 'huzursmp_site_session';
 const PROFILE_KEY = 'huzursmp_site_profiles';
-const RESERVED_NICKS = ['happaypatrickd', 'happaypatrick', 'mavzerina'];
+const RESERVED_NICKS = ['happaypatrickd', 'happaypatrick'];
+const REMOVED_NICKS = ['mavzerina'];
 const AUTH_LOCK_KEY = 'huzursmp_auth_lock';
 const AUTH_MAX_FAILS = 5;
 const AUTH_LOCK_MS = 30000;
@@ -35,7 +36,6 @@ const STAFF_ROLE_LABELS = {
 
 const STAFF = [
     { name: 'happaypatrickD', role: 'Kurucu' },
-    { name: 'Mavzerina', role: 'Kurucu' },
     { name: 'HET', role: 'Admin' },
     { name: 'KimsesizMakina', role: 'Admin' },
     { name: 'KimsesizMaakina', role: 'Admin', alias: true },
@@ -194,6 +194,45 @@ function readProfiles() {
 
 function writeProfiles(profiles) {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+}
+
+function purgeRemovedLocalData() {
+    const removed = (value) => REMOVED_NICKS.includes(String(value || '').trim().toLowerCase());
+
+    try {
+        const users = readUsers();
+        let changed = false;
+        Object.keys(users).forEach((key) => {
+            const entry = users[key];
+            const nick = (entry && entry.nick) || key;
+            if (removed(nick)) {
+                delete users[key];
+                changed = true;
+            }
+        });
+        if (changed) writeUsers(users);
+
+        const profiles = readProfiles();
+        changed = false;
+        Object.keys(profiles).forEach((key) => {
+            if (removed(key)) {
+                delete profiles[key];
+                changed = true;
+            }
+        });
+        if (changed) writeProfiles(profiles);
+
+        if (removed(getSession())) localStorage.removeItem(AUTH_SESSION_KEY);
+
+        const cache = readStatusCache();
+        if (cache && Array.isArray(cache.names)) {
+            const names = cache.names.filter((name) => !removed(name));
+            if (names.length !== cache.names.length) {
+                cache.names = names;
+                localStorage.setItem(STATUS_CACHE_KEY, JSON.stringify(cache));
+            }
+        }
+    } catch (error) {}
 }
 
 function ensureProfile(nick) {
@@ -877,6 +916,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (registerPass) registerPass.placeholder = 'En az 8 karakter';
     }
 
+    purgeRemovedLocalData();
     await autoLoginOwner();
     updateAuthUI();
     restoreSecureSession();
