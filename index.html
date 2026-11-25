@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HuzurSmp - sakin, adil ve sorunsuz Minecraft survival sunucusu.">
+    <meta name="theme-color" content="#81c784">
+    <title>HuzurSmp | Minecraft Survival</title>
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="music-player" aria-label="Site müziği">
+        <div class="music-title"><i class="fa-solid fa-music"></i> ʜᴜᴢᴜʀꜱᴍᴘ Müzik</div>
+        <audio id="bgMusic" loop preload="none">
+            <source src="assets/huzursmp-theme.mp3" type="audio/mpeg">
+        </audio>
+        <button id="musicToggle" class="music-btn" type="button" onclick="toggleMusic()">
+            <i class="fa-solid fa-play"></i> Başlat
+        </button>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="#" onclick="showSection('anasayfa'); return false;" aria-label="HuzurSmp ana sayfa">
+                <img src="logo.svg" alt="HuzurSmp logo" class="main-logo">
+                <span class="logo-text">Huzur<span>Smp</span></span>
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="mobile-menu" type="button" onclick="toggleMenu()" aria-label="Menüyü aç/kapat" aria-expanded="false">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
+        <ul class="nav-links" id="nav-list">
+            <li><a href="#anasayfa" onclick="showSection('anasayfa'); return false;">Anasayfa</a></li>
+            <li><a href="#guncellemeler" onclick="showSection('guncellemeler'); return false;">Güncellemeler</a></li>
+            <li><a href="#destek" onclick="showSection('destek'); return false;">Destek</a></li>
+            <li><a href="#hakkimizda" onclick="showSection('hakkimizda'); return false;">Hakkımızda</a></li>
+            <li><a href="#" class="nav-login" id="authNavButton" onclick="openAuth('login'); return false;"><i class="fa-solid fa-right-to-bracket"></i> Giriş Yap</a></li>
+            <li><a href="#anasayfa" class="nav-cta" onclick="copyServerIp(); return false;"><i class="fa-solid fa-copy"></i> IP'yi Kopyala</a></li>
+        </ul>
+    </nav>
+
+    <main id="content-area">
+        <section id="anasayfa" class="content-section active">
+            <div class="hero-section">
+                <div class="hero-badge"><i class="fa-solid fa-leaf"></i> Survival • 1.21+</div>
+                <h1>HuzurSmp'ye hoş geldin.</h1>
+                <p>Sakin, adil ve sorunsuz bir Minecraft deneyimi. Rütbeler emekle kazanılır, oyun her zaman oyuncu içindir.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary" type="button" onclick="copyServerIp()">
+                        <i class="fa-solid fa-play"></i> Hemen Oyna
+                    </button>
+                    <button class="btn btn-ghost" type="button" onclick="showSection('guncellemeler'); return false;">
+                        <i class="fa-solid fa-newspaper"></i> Güncellemeler
+                    </button>
+                </div>
+            </div>
+
+            <div class="server-status-bar" id="statusBar" data-state="checking" title="Sunucu durumu kontrol ediliyor...">
+                <span class="status-dot checking" id="statusDot" aria-hidden="true"></span>
+                <span class="status-label">Sunucu:</span>
+                <strong class="status-value checking" id="statusLabel">Kontrol ediliyor...</strong>
+                <span class="status-divider"></span>
+                <span class="player-count" id="playerCount">Oyuncu: --</span>
+                <span class="status-divider"></span>
+                <code class="server-ip" id="serverIpMain" title="Kopyalamak için tıkla">fried-latch.tun.ply.gg</code>
+                <button class="copy-btn" type="button" onclick="copyServerIp()" aria-label="Sunucu IP'sini kopyala">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+            </div>
+
+            <div class="features-grid">
+                <article class="feature-card">
+                    <div class="feature-icon green"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Güvenli Bağlantı</h3>
+                    <p>Gerçek sunucu adresi gizli. Trafik playit edge üzerinden yönlendiriliyor.</p>
+                </article>
+                <article class="feature-card">
+                    <div class="feature-icon blue"><i class="fa-solid fa-robot"></i></div>
+                    <h3>Bot Koruması</h3>
+                    <p>Owner kontrolünde, gerektiğinde sıkı moda geçebilen canlı filtre.</p>
+                </article>
+                <article class="feature-card">
+                    <div class="feature-icon purple"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <h3>Adil Rütbeler</h3>
+                    <p>LuckPerms hiyerarşisiyle net yetkiler, owner akışı UUID bazlı ve otomatik.</p>
+                </article>
+                <article class="feature-card">
+                    <div class="feature-icon orange"><i class="fa-solid fa-broom"></i></div>
+                    <h3>Temiz Dünyalar</h3>
+                    <p>ClearLag overworld, nether, end ve lobi dünyalarının tamamında çalışır.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="guncellemeler" class="content-section">
+            <div class="section-heading">
+                <span class="section-kicker">Günlük hayat</span>
+                <h1>Sunucu Güncellemeleri</h1>
+                <p>Yeni dünyalar, ayarlar ve küçük iyileştirmeler burada.</p>
+            </div>
+            <div class="blog-container">
+                <article class="blog-post">
+                    <div class="blog-image blog-green"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="blog-content">
+                        <h3>Bot koruması aktif</h3>
+                        <p>Owner yetkisindeki <code>/koruma</code> komutuyla durum, mod ve güven listesi yönetilebiliyor.</p>
+                        <span class="blog-date">25 Kasım 2026</span>
+                    </div>
+                </article>
+                <article class="blog-post">
+                    <div class="blog-image blog-blue"><i class="fa-solid fa-broom"></i></div>
+                    <div class="blog-content">
+                        <h3>ClearLag tüm dünyalarda</h3>
+                        <p>Nether ve end de artık otomatik temizlik kapsamında. Lobi dünyaları da dahil.</p>
+                        <span class="blog-date">25 Kasım 2026</span>
+                    </div>
+                </article>
+                <article class="blog-post">
+                    <div class="blog-image blog-purple"><i class="fa-solid fa-crown"></i></div>
+                    <div class="blog-content">
+                        <h3>Owner akışı otomatikleşti</h3>
+                        <p>Owner alan oyuncu otomatik OP oluyor; alınınca deop, survival ve eski grubuna dönüş yapılıyor.</p>
+                        <span class="blog-date">24 Kasım 2026</span>
+                    </div>
+                </article>
+                <article class="blog-post">
+                    <div class="blog-image blog-orange"><i class="fa-solid fa-globe"></i></div>
+                    <div class="blog-content">
+                        <h3>Yeni dünya: Smpim</h3>
+                        <p>Overworld, nether ve end yeniden kuruldu. Spawn, lobi ve güvenli End köşesi hazır.</p>
+                        <span class="blog-date">22 Kasım 2026</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="destek" class="content-section">
+            <div class="section-heading">
+                <span class="section-kicker">Yardım</span>
+                <h1>Destek & Rehberler</h1>
+                <p>Sorun mu var? Önce rehberlere ve SSS'ye bak, olmadı oyun içinden yetkiliye yaz.</p>
+            </div>
+
+            <div class="staff-status" id="staffStatus" title="Aktif yönetim sunucu listesinden kontrol edilir.">
+                <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+                <span id="staffStatusText">Aktif kurucu/admin aranıyor...</span>
+            </div>
+
+            <div class="support-grid">
+                <div class="support-card">
+                    <div class="feature-icon green"><i class="fa-solid fa-headset"></i></div>
+                    <h3>Oyun İçi Destek</h3>
+                    <p>Şimdilik sorularını oyun içinden yetkiliye iletebilirsin.</p>
+                    <button class="btn btn-primary btn-small" type="button" onclick="showSection('guncellemeler'); return false;">
+                        <i class="fa-solid fa-newspaper"></i> Güncellemeleri gör
+                    </button>
+                </div>
+                <div class="support-card">
+                    <div class="feature-icon blue"><i class="fa-solid fa-circle-question"></i></div>
+                    <h3>Sık Sorulanlar</h3>
+                    <p>Sunucu IP'si, giriş sorunları ve rütbe konuları için aşağıdaki sorulara göz at.</p>
+                </div>
+            </div>
+
+            <div class="guides-block">
+                <h2 class="subheading"><i class="fa-solid fa-book-open"></i> Hızlı Rehberler</h2>
+                <div class="guide-grid">
+                    <article class="guide-card">
+                        <div class="guide-icon green"><i class="fa-solid fa-door-open"></i></div>
+                        <h3>Sunucuya Nasıl Girilir?</h3>
+                        <ol>
+                            <li>Aşağıdaki IP'yi kopyala.</li>
+                            <li>Minecraft → Multiplayer → Add Server.</li>
+                            <li>Adresi yapıştır, sunucuya katıl.</li>
+                        </ol>
+                        <button class="btn btn-primary btn-small" type="button" onclick="copyServerIp()">
+                            <i class="fa-regular fa-copy"></i> IP'yi kopyala
+                        </button>
+                    </article>
+
+                    <article class="guide-card">
+                        <div class="guide-icon blue"><i class="fa-solid fa-medal"></i></div>
+                        <h3>Rütbe Sistemi</h3>
+                        <ol>
+                            <li>Rütbeler LuckPerms ile yönetilir.</li>
+                            <li>Owner ataması oyuncu UUID'sine bağlıdır.</li>
+                            <li>Owner alınınca OP gelir, alınınca geri alınır.</li>
+                        </ol>
+                    </article>
+
+                    <article class="guide-card">
+                        <div class="guide-icon purple"><i class="fa-solid fa-gavel"></i></div>
+                        <h3>Ban ve Affetme</h3>
+                        <ol>
+                            <li>Ciddi ihlallerde IP + UUID ban uygulanır.</li>
+                            <li>Oyun içi yetkili kararıyla affedilir.</li>
+                            <li>Yetkili <code>/affetim</code> komutunu kullanır.</li>
+                        </ol>
+                    </article>
+
+                    <article class="guide-card">
+                        <div class="guide-icon orange"><i class="fa-solid fa-robot"></i></div>
+                        <h3>Bot Koruması</h3>
+                        <ol>
+                            <li>Filtre açık ve normal modda çalışır.</li>
+                            <li><code>/koruma</code> sadece owner'a açıktır.</li>
+                            <li>Gerekiyorsa owner <code>/koruma siki</code> yapar.</li>
+                        </ol>
+                    </article>
+                </div>
+            </div>
+
+            <div class="faq-list">
+                <details class="faq-item" open>
+                    <summary>Sunucu IP'si nedir?<i class="fa-solid fa-chevron-down"></i></summary>
+                    <p><code>fried-latch.tun.ply.gg</code> adresini Minecraft'ın Multiplayer sekmesine ekle. Port varsayılan olarak 25565.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>Giriş yapamıyorum, ne kontrol etmeliyim?<i class="fa-solid fa-chevron-down"></i></summary>
+                    <p>Önce adresi birebir kopyaladığından emin ol. Sunucu playit tüneli üzerinde yayında; bağlantı kurulmuyorsa biraz bekleyip tekrar dene.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>Rütbeler nasıl çalışır?<i class="fa-solid fa-chevron-down"></i></summary>
+                    <p>Rütbeler LuckPerms üzerinden yönetilir. Owner ataması oyuncu UUID'sine bağlıdır; kişiye özel bir istisna yoktur.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>Ban affı için kime yazmalıyım?<i class="fa-solid fa-chevron-down"></i></summary>
+                    <p>Şimdilik oyun içinden yetkiliye ulaş.</p>
+                </details>
+            </div>
+        </section>
+
+        <section id="hakkimizda" class="content-section">
+            <div class="section-heading">
+                <span class="section-kicker">Biz</span>
+                <h1>HuzurSmp Hakkında</h1>
+                <p>Sade bir fikir: kimseyi sıkmayan, adil ve uzun soluklu bir survival sunucusu.</p>
+            </div>
+
+            <div class="about-card">
+                <p>HuzurSmp; DonutSMP altyapısı üzerinde kurulmuş, Türkçe konuşan oyuncular için hazırlanmış bir survival dünyası. Rütbeler, ekonomi, spawn, lobi ve güvenlik sistemleri topluluğun rahat oynayabilmesi için düzenli olarak iyileştiriliyor.</p>
+                <div class="about-points">
+                    <span><i class="fa-solid fa-check"></i> UUID bazlı owner sistemi</span>
+                    <span><i class="fa-solid fa-check"></i> Origin gizli, DDoS'a karşı dayanıklı</span>
+                    <span><i class="fa-solid fa-check"></i> Tüm dünyalarda otomatik temizlik</span>
+                    <span><i class="fa-solid fa-check"></i> Sade ve anlaşılır komutlar</span>
+                </div>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar"><i class="fa-solid fa-crown"></i></div>
+                    <h3>Owner</h3>
+                    <span class="team-role">Genel Yönetim</span>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar"><i class="fa-solid fa-user-gear"></i></div>
+                    <h3>Yönetim</h3>
+                    <span class="team-role">Sunucu & Topluluk</span>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar"><i class="fa-solid fa-users"></i></div>
+                    <h3>Oyuncular</h3>
+                    <span class="team-role">Topluluğun kalbi</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <div>
+                <strong>HuzurSmp</strong>
+                <p>Sakin oyun, adil dünya.</p>
+            </div>
+            <div>
+                <span>Sunucu adresi</span>
+                <code onclick="copyServerIp()">fried-latch.tun.ply.gg</code>
+            </div>
+            <div>
+                <span>&copy; <span id="year">2026</span> HuzurSmp</span>
+            </div>
+        </div>
+    </footer>
+
+    <div class="auth-overlay" id="authOverlay" hidden onclick="if (event.target === this) closeAuth()">
+        <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+            <button class="auth-close" type="button" onclick="closeAuth()" aria-label="Kapat">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 id="authTitle"><i class="fa-solid fa-right-to-bracket"></i> HuzurSmp Hesabı</h2>
+
+            <div class="auth-tabs" id="authTabs">
+                <button type="button" class="active" id="authTabLogin" onclick="switchAuth('login')">Giriş Yap</button>
+                <button type="button" id="authTabRegister" onclick="switchAuth('register')">Kayıt Ol</button>
+            </div>
+
+            <form id="authLoginForm" class="auth-form" onsubmit="handleLogin(event)">
+                <label for="loginNick">Oyuncu adı</label>
+                <input id="loginNick" type="text" autocomplete="username" maxlength="16" placeholder="Örn. happaypatrickD" required>
+
+                <label for="loginPass">Şifre</label>
+                <input id="loginPass" type="password" autocomplete="current-password" maxlength="64" placeholder="Şifren" required>
+
+                <button class="btn btn-primary" type="submit">Giriş Yap</button>
+            </form>
+
+            <form id="authRegisterForm" class="auth-form" onsubmit="handleRegister(event)" hidden>
+                <label for="registerNick">Oyuncu adı</label>
+                <input id="registerNick" type="text" autocomplete="username" maxlength="16" placeholder="3-16 karakter" required>
+
+                <label for="registerPass">Şifre</label>
+                <input id="registerPass" type="password" autocomplete="new-password" maxlength="64" placeholder="En az 4 karakter" required>
+
+                <label for="registerPass2">Şifre tekrar</label>
+                <input id="registerPass2" type="password" autocomplete="new-password" maxlength="64" placeholder="Şifreyi tekrar yaz" required>
+
+                <button class="btn btn-primary" type="submit">Kayıt Ol</button>
+            </form>
+
+            <div id="authProfile" class="auth-profile" hidden>
+                <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                <p>Hoş geldin, <strong id="profileName">-</strong></p>
+                <button class="btn btn-ghost btn-small" type="button" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap
+                </button>
+            </div>
+
+            <p class="auth-note">Bu giriş yalnızca bu tarayıcıda site görünümü içindir; Minecraft hesabını doğrulamaz.</p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="script.js"></script>
+</body>
+</html>
