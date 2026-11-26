@@ -591,6 +591,10 @@ code {
     box-shadow: var(--shadow);
 }
 
+.staff-status[hidden] {
+    display: none;
+}
+
 .staff-status i {
     color: var(--accent);
 }

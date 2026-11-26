@@ -161,9 +161,9 @@
                 <p>Sorun mu var? Önce rehberlere ve SSS'ye bak, olmadı oyun içinden yetkiliye yaz.</p>
             </div>
 
-            <div class="staff-status" id="staffStatus" title="Aktif yönetim sunucu listesinden kontrol edilir.">
+            <div class="staff-status" id="staffStatus" title="Aktif yönetim sunucu listesinden kontrol edilir." hidden>
                 <i class="fa-solid fa-user-check" aria-hidden="true"></i>
-                <span id="staffStatusText">Aktif kurucu/admin/mod aranıyor...</span>
+                <span id="staffStatusText"></span>
                 <button class="staff-refresh" type="button" title="Aktif yönetimi yenile" aria-label="Aktif yönetimi yenile" onclick="updateServerStatus(true); return false;">
                     <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
                 </button>
@@ -395,6 +395,6 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="script.js?v=jrpython-live"></script>
+    <script src="script.js?v=sadece-kurucu"></script>
 </body>
 </html>

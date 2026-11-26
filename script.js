@@ -724,13 +724,14 @@ function updateStaffStatus(onlineNames) {
     const text = document.getElementById('staffStatusText');
     if (!box || !text) return;
 
-    const active = STAFF.filter((member) => onlineNames.has(member.name.toLowerCase()));
-
-    if (active.length === 0) {
-        text.textContent = 'Şu an aktif kurucu/admin/mod/rehber yok.';
-        box.classList.remove('active');
+    // Kutu sadece kurucu sunucudayken gorunur.
+    if (!onlineNames.has(OWNER_NICK.toLowerCase())) {
+        box.hidden = true;
+        text.textContent = '';
         return;
     }
+
+    const active = STAFF.filter((member) => onlineNames.has(member.name.toLowerCase()));
 
     const parts = STAFF_ROLES
         .map((role) => ({
@@ -741,6 +742,7 @@ function updateStaffStatus(onlineNames) {
         .map((group) => `${STAFF_ROLE_LABELS[group.role]}: ${group.names.join(', ')}`);
 
     text.textContent = parts.join(' | ');
+    box.hidden = false;
     box.classList.add('active');
 }
 

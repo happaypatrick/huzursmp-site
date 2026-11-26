@@ -124,7 +124,7 @@ Ana sayfadaki durum çubuğu `https://api.mcsrvstat.us/3/fried-latch.tun.ply.gg`
 - Sunucu ayakta → yeşil nokta ve **Açık**
 - Sunucu kapalı veya API'ye ulaşılamadı → kırmızı nokta ve **Kapalı**
 - Yanında `Oyuncu: online/max` bilgisi gösterilir
-- Destek bölümünde aktif kurucu/admin adı gösterilir
+- Destek bölümündeki aktif yönetim kutusu **sadece kurucu sunucudayken** görünür; kurucu yoksa kutu tamamen gizlenir
 
 Aktif yönetim listesi `script.js` içindeki `STAFF` dizisinden gelir:
 
@@ -136,7 +136,7 @@ const STAFF = [
 ];
 ```
 
-Yeni kurucu/admin eklenirse buraya ekle. API'nin döndürdüğü oyuncu listesiyle eşleşirse destek kısmında `Aktif kurucu: ...` / `Aktif admin: ...` yazar.
+Yeni kurucu/admin eklenirse buraya ekle. API'nin döndürdüğü oyuncu listesinde `Jrpython` varsa kutu açılır ve `Aktif kurucu: ...` / `Aktif admin: ...` yazar; kurucu listede yoksa kutu gizli kalır.
 
 API 5 dakika cache kullandığı için bot korumasının ping flood eşiğine takılmaz. `enable-query=false` olsa da server list ping çalıştığı için durum sorgusu sorunsuzdur.
 
